@@ -1,0 +1,31 @@
+version: "2"
+services:
+
+  # Provide the build files to test.
+  setup:
+    build: test/
+    command: rsync -av --delete /setup/ /app
+    volumes:
+      - data-volume:/app
+
+  # Build an installer
+  build_test_exe:
+    depends_on:
+      - setup
+    build: .
+    command: /app/test.nsi
+    volumes:
+      - data-volume:/app
+
+  # Test the installer
+  sut:
+    depends_on:
+      - setup
+      - build_test_exe
+    build: test/
+    command: /setup/test.sh /app
+    volumes:
+      - data-volume:/app
+
+volumes:
+  data-volume: ~
